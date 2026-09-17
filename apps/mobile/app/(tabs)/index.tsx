@@ -427,18 +427,18 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View className="flex-row items-center gap-2">
-          <View className="flex-1 flex-row items-center bg-muted/50 rounded-lg px-3 h-10">
+        <View className="flex-row items-center gap-1.5">
+          <View className="flex-1 flex-row items-center gap-2 bg-muted/50 rounded-full pl-4 pr-3 h-11">
             <Search size={18} color={THEME[theme].mutedForeground} />
             <TextInput
-              className="flex-1 text-sm text-foreground ml-2 placeholder:text-muted-foreground/50"
+              className="flex-1 text-sm text-foreground placeholder:text-muted-foreground/50"
               placeholder="Search connections..."
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholderTextColor={THEME[theme].mutedForeground}
             />
             {searchQuery.length > 0 && (
-              <Pressable onPress={() => setSearchQuery("")}>
+              <Pressable onPress={() => setSearchQuery("")} hitSlop={8} className="p-1">
                 <X size={16} color={THEME[theme].mutedForeground} />
               </Pressable>
             )}
@@ -446,7 +446,7 @@ export default function HomeScreen() {
           <Pressable
             onPress={() => { setShowFilterMenu(!showFilterMenu); setShowSortMenu(false) }}
             className={cn(
-              "h-10 w-10 rounded-lg items-center justify-center",
+              "h-11 w-11 rounded-full items-center justify-center shrink-0",
               showFilterMenu ? "bg-primary/10" : "bg-muted/50"
             )}
           >
@@ -455,7 +455,7 @@ export default function HomeScreen() {
           <Pressable
             onPress={() => { setShowSortMenu(!showSortMenu); setShowFilterMenu(false) }}
             className={cn(
-              "h-10 w-10 rounded-lg items-center justify-center",
+              "h-11 w-11 rounded-full items-center justify-center shrink-0",
               showSortMenu ? "bg-primary/10" : "bg-muted/50"
             )}
           >

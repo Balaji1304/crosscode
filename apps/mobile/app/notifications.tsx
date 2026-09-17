@@ -220,14 +220,14 @@ export default function NotificationsPage() {
               {unreadCount > 0 && (
                 <Pressable
                   onPress={markAllAsRead}
-                  className="h-9 w-9 items-center justify-center rounded-lg bg-muted/50 active:bg-muted"
+                  className="h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted/50 active:bg-muted"
                 >
                   <CheckCheck size={18} color={THEME[theme].foreground} />
                 </Pressable>
               )}
               <Pressable
                 onPress={() => setConfirmClear(true)}
-                className="h-9 w-9 items-center justify-center rounded-lg bg-muted/50 active:bg-muted"
+                className="h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted/50 active:bg-muted"
               >
                 <Trash2 size={17} color={THEME[theme].destructive} />
               </Pressable>

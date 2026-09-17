@@ -161,7 +161,7 @@ export default function FilesPage() {
                 className="flex-row items-center gap-2 border-b border-accent px-4"
                 style={{ paddingTop: insets.top + 10, paddingBottom: 10 }}
             >
-                <Button variant="ghost" className="w-10 h-10" onPress={() => router.back()}>
+                <Button variant="ghost" className="w-10 h-10 rounded-full" onPress={() => router.back()}>
                     <ArrowLeftIcon size={20} color={THEME[theme].foreground} />
                 </Button>
                 <Text className="text-base font-semibold flex-1">Modified files</Text>
