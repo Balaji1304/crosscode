@@ -108,7 +108,7 @@ export default async function RootLayout({
       <body className={`${manrope.variable} ${jetbrainsMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
-          <SanityLive />
+          {isDraftMode && <SanityLive />}
           {isDraftMode && (
             <>
               <VisualEditing />
