@@ -3,10 +3,14 @@ import { db } from "@/lib/db"
 import { user } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { logger } from "@/lib/logger"
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit"
 import { effectiveTier } from "@crosscode/shared"
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await checkRateLimit(req, "sensitiveWrite")
+    if (!rl.success) return rateLimitedResponse(rl)
+
     const body = await req.json()
     const { apiKey } = body
 

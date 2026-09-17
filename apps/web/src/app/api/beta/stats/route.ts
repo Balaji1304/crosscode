@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { betaFeedback } from "@/lib/db/schema"
 import { NextResponse } from "next/server"
 import { logger } from "@/lib/logger"
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit"
 
 export const revalidate = 60
 
@@ -10,8 +11,10 @@ function avg(values: number[]) {
   return Number((values.reduce((s, v) => s + v, 0) / values.length).toFixed(1))
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const rl = await checkRateLimit(request, "publicRead")
+    if (!rl.success) return rateLimitedResponse(rl)
     const feedbacks = await db
       .select({
         ratingOverall: betaFeedback.ratingOverall,

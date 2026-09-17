@@ -5,6 +5,7 @@ import { db, client } from "./db"
 import * as schema from "./db/schema"
 import { sendOTPEmail } from "./email"
 import { logger } from "./logger"
+import { checkOtpResendCooldown } from "./rate-limit"
 
 logger.info("Auth", `Module loaded - DATABASE_URL=${process.env.DATABASE_URL?.replace(/\/\/.*@/, "//***@")}`)
 logger.info("Auth", `BETTER_AUTH_URL=${process.env.BETTER_AUTH_URL || "(not set)"}, NEXT_PUBLIC_BETTER_AUTH_URL=${process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "(not set)"}`)
@@ -83,7 +84,13 @@ export const auth = betterAuth({
   },
   plugins: [
     emailOTP({
+      rateLimit: { window: 60, max: 5 },
       async sendVerificationOTP({ email, otp, type }) {
+        const { allowed, retryAfter } = await checkOtpResendCooldown(email, 60)
+        if (!allowed) {
+          logger.warn("Auth", `OTP resend cooldown - email=${email}, retryAfter=${retryAfter}s`)
+          throw new Error(`Please wait ${retryAfter}s before requesting another code`)
+        }
         logger.info("Auth", `Sending OTP - email=${email}, type=${type}`)
         try {
           const subject = type === "sign-in" ? "Your sign-in code" : "Your OTP code"

@@ -5,11 +5,18 @@ import { appUrl, getDodo, getProductId } from "@/lib/dodo"
 import { db } from "@/lib/db"
 import { user } from "@/lib/db/schema"
 import type { BillingCurrency, BillingCycle, PaidTier } from "@crosscode/shared"
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit"
 
 export async function POST(req: NextRequest) {
   try {
+    const ipRl = await checkRateLimit(req, "billing")
+    if (!ipRl.success) return rateLimitedResponse(ipRl)
+
     const currentUser = await getBillingUser(req)
     if (!currentUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+    const userRl = await checkRateLimit(req, "billing", `user:${currentUser.id}`)
+    if (!userRl.success) return rateLimitedResponse(userRl)
 
     const body = await req.json() as { tier?: string; cycle?: string; currency?: string }
     const tier = body.tier as PaidTier

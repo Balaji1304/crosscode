@@ -4,11 +4,18 @@ import { db } from "@/lib/db"
 import { user } from "@/lib/db/schema"
 import { getBillingUser } from "@/lib/billing-auth"
 import { getDodo, tierFromProductId } from "@/lib/dodo"
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit"
 
 export async function POST(req: NextRequest) {
   try {
+    const ipRl = await checkRateLimit(req, "billing")
+    if (!ipRl.success) return rateLimitedResponse(ipRl)
+
     const currentUser = await getBillingUser(req)
     if (!currentUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+    const userRl = await checkRateLimit(req, "billing", `user:${currentUser.id}`)
+    if (!userRl.success) return rateLimitedResponse(userRl)
     const { subscriptionId } = await req.json() as { subscriptionId?: string }
     if (!subscriptionId) return NextResponse.json({ error: "Missing subscription ID" }, { status: 400 })
 

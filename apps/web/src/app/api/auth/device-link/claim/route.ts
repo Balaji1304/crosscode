@@ -3,9 +3,13 @@ import { db } from "@/lib/db"
 import { deviceSession } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { logger } from "@/lib/logger"
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit"
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await checkRateLimit(req, "sensitiveWrite")
+    if (!rl.success) return rateLimitedResponse(rl)
+
     const { searchParams } = new URL(req.url)
     const token = searchParams.get("token")
 
