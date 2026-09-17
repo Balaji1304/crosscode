@@ -76,7 +76,7 @@ export default function DiffPage() {
                     showsHorizontalScrollIndicator={false}
                     nestedScrollEnabled
                     style={{ flex: 1 }}
-                    contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 4, alignItems: "center" }}
+                    contentContainerStyle={{ paddingHorizontal: 4 }}
                 >
                     <Text className="text-xs font-mono leading-5" style={{ color: textColor }}>
                         {line.content || " "}
