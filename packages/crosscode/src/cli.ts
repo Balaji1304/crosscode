@@ -7,6 +7,8 @@ import { encodeQrPayload } from "@crosscode/shared"
 import { debug, checkDep, setLogWriter, getFreePort } from "./util"
 import { logCrosscode, closeAllLogs, crosscodeLogFile, cloudflaredLogFile, opencodeLogFile } from "./log"
 import { readConfig, saveConfig, getProjectConfig, ensureSessionToken } from "./config"
+import { initSentry, captureCliError } from "./sentry"
+import * as Sentry from "@sentry/node"
 import { loginFlow, refreshTier } from "./auth"
 import { proxyAgent } from "./proxy"
 import { onKeypress, cleanupKeypress } from "./keypress"
@@ -41,8 +43,24 @@ function printHelp() {
 async function main() {
     const args = process.argv.slice(2)
     const config = readConfig()
+    initSentry(config)
     await refreshTier(config)
     const command = args[0]
+
+    if (command === "telemetry") {
+        if (args[1] === "enable") {
+            config.telemetry = true
+            saveConfig(config)
+            console.log(chalk.green("\n Telemetry enabled (requires CROSSCODE_SENTRY_DSN).\n"))
+        } else if (args[1] === "disable") {
+            config.telemetry = false
+            saveConfig(config)
+            console.log(chalk.dim("\n Telemetry disabled.\n"))
+        } else {
+            console.log(chalk.dim(`\n Telemetry: ${config.telemetry === true ? "enabled" : "disabled"} (CROSSCODE_SENTRY_DSN ${process.env.CROSSCODE_SENTRY_DSN ? "set" : "not set"})\n`))
+        }
+        process.exit(0)
+    }
 
     if (command === "login") {
         const success = await loginFlow(config)
@@ -81,6 +99,7 @@ ${chalk.yellow.bold("COMMANDS:")}
   ${chalk.green("login")}              Authenticate with API key (opens browser)
   ${chalk.green("logout")}             Clear saved authentication data
   ${chalk.green("status")}             Show current login status and tier
+  ${chalk.green("telemetry")}          Enable/disable error reporting (enable|disable)
   ${chalk.green("help")}               Show this help message
 
 ${chalk.yellow.bold("OPTIONS:")}
@@ -110,6 +129,8 @@ ${chalk.dim("Documentation: https://github.com/snhsish/crosscode")}
     const useCloudflared = args.includes("--cloudflared")
     const canUseTunnel = !!(config.auth?.sessionToken)
     const tunnelProvider = useNgrok ? "ngrok" : (useCloudflared ? "cloudflared" : (canUseTunnel ? "tunnel" : "cloudflared"))
+    initSentry(config, { tunnelProvider })
+    Sentry.setTag("tunnelProvider", tunnelProvider)
     const project = getProjectConfig(config)
     const port = project.port || await getFreePort()
 
@@ -266,6 +287,10 @@ main()
     .catch(async err => {
         console.error(chalk.red(err))
         logCrosscode("Fatal error: " + (err instanceof Error ? err.message : String(err)))
+        try {
+            captureCliError(err)
+            await Sentry.flush(2000)
+        } catch {}
         proxyAgent.destroy()
         await closeAllLogs()
         process.exit(1)

@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createMDX from "@next/mdx";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@crosscode/shared"],
@@ -21,4 +22,11 @@ const nextConfig: NextConfig = {
 
 const withMDX = createMDX({});
 
-export default withMDX(nextConfig);
+export default withSentryConfig(withMDX(nextConfig), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT ?? "crosscode-web",
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  tunnelRoute: "/sentry-tunnel",
+  silent: !process.env.CI,
+  disableLogger: true,
+});

@@ -7,7 +7,7 @@ export default defineConfig({
   clean: true,
   bundle: true,
   splitting: false,
-  sourcemap: false,
+  sourcemap: true,
   dts: false,
   minify: false,
   noExternal: [/@crosscode\/shared/],

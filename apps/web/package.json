@@ -20,6 +20,7 @@
     "@portabletext/react": "^8.0.0",
     "@sanity/image-url": "^2.1.1",
     "@sanity/vision": "^6.9.2",
+    "@sentry/nextjs": "^10",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/mdx": "^2.0.14",
     "@types/qrcode": "^1.5.6",
