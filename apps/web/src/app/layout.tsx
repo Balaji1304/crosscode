@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Manrope, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { DisableDraftMode } from "@/components/disable-draft-mode";
@@ -17,15 +17,83 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://crosscode.site";
+const siteTitle = "CrossCode: Control Your OpenCode Agent from Anywhere";
+const siteDescription =
+  "Your OpenCode agent in your pocket. Approve tool calls, review diffs and manage sessions from anywhere.";
+
 export const metadata: Metadata = {
-  title: "CrossCode",
-  description: "CrossCode Web Application",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: siteTitle,
+    template: "%s | CrossCode",
+  },
+  description: siteDescription,
+  keywords: [
+    "OpenCode",
+    "AI coding agent",
+    "remote development",
+    "mobile coding",
+    "CLI",
+    "secure tunnel",
+    "CrossCode",
+  ],
+  authors: [{ name: "CrossCode" }],
+  creator: "CrossCode",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "/",
+    siteName: "CrossCode",
+    title: siteTitle,
+    description: siteDescription,
+    images: [
+      {
+        url: "/banner.png",
+        width: 1280,
+        height: 720,
+        alt: "CrossCode: control your OpenCode agent from your phone",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+    images: ["/banner.png"],
+    creator: "@crosscodeai",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/icon-light-mode.png", media: "(prefers-color-scheme: light)" },
       { url: "/icon-dark-mode.png", media: "(prefers-color-scheme: dark)" },
     ],
+    apple: [{ url: "/icon-light-mode.png" }],
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export default async function RootLayout({
