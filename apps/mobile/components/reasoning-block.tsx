@@ -11,7 +11,15 @@ interface ReasoningBlockProps {
     text: string
     streaming?: boolean
     startedAt?: number
+    endedAt?: number
     theme: "light" | "dark"
+}
+
+function cleanReasoningText(raw: string): string {
+    return raw
+        .replace(/<\/?thinking[^>]*>/gi, "")
+        .replace(/<\/?think[^>]*>/gi, "")
+        .trim()
 }
 
 function formatThoughtDuration(totalSeconds: number): string {
@@ -22,41 +30,46 @@ function formatThoughtDuration(totalSeconds: number): string {
     return `${minutes}m ${seconds}s`
 }
 
-export const ReasoningBlock = memo(function ReasoningBlock({ text, streaming, startedAt, theme }: ReasoningBlockProps) {
-    const [expanded, setExpanded] = useState(false)
-    const [elapsed, setElapsed] = useState<number | null>(null)
+export const ReasoningBlock = memo(function ReasoningBlock({ text, streaming, startedAt, endedAt, theme }: ReasoningBlockProps) {
+    const [expanded, setExpanded] = useState(true)
+    const [elapsed, setElapsed] = useState<number | null>(
+        startedAt != null && endedAt != null ? Math.max(0, (endedAt - startedAt) / 1000) : null,
+    )
     const startRef = useRef<number | null>(null)
 
     useEffect(() => {
+        if (endedAt != null && startedAt != null) {
+            setElapsed(Math.max(0, (endedAt - startedAt) / 1000))
+            return
+        }
         if (streaming) {
             if (startRef.current === null) {
                 startRef.current = startedAt ?? Date.now()
             }
+            setExpanded(true)
         } else if (startRef.current !== null) {
             setElapsed((Date.now() - startRef.current) / 1000)
             startRef.current = null
         }
-    }, [streaming, startedAt])
+    }, [streaming, startedAt, endedAt])
 
-    const progress = useSharedValue(0)
-    const chevron = useSharedValue(0)
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: progress.value,
-        maxHeight: progress.value * 4000,
-        overflow: "hidden" as const,
-    }))
+    const chevron = useSharedValue(expanded ? 1 : 0)
 
     const chevronStyle = useAnimatedStyle(() => ({
         transform: [{ rotate: `${chevron.value * 180}deg` }],
     }))
 
+    useEffect(() => {
+        chevron.value = withTiming(expanded ? 1 : 0, { duration: 200 })
+    }, [expanded])
+
     const toggle = () => {
-        const next = !expanded
-        setExpanded(next)
-        chevron.value = withTiming(next ? 1 : 0, { duration: 200 })
-        progress.value = withTiming(next ? 1 : 0, { duration: 200 })
+        setExpanded((prev) => !prev)
     }
+
+    const body = cleanReasoningText(text ?? "")
+
+    if (!streaming && body.length === 0) return null
 
     return (
         <View>
@@ -69,23 +82,21 @@ export const ReasoningBlock = memo(function ReasoningBlock({ text, streaming, st
                         shineColor={THEME[theme].foreground}
                     />
                 ) : (
-                    <>
-                        <Text className="text-xs text-muted-foreground font-medium">
-                            Thought{elapsed != null ? ` for ${formatThoughtDuration(elapsed)}` : ""}
-                        </Text>
-                        <Animated.View style={chevronStyle}>
-                            <ChevronDownIcon size={12} color={THEME[theme].mutedForeground} />
-                        </Animated.View>
-                    </>
+                    <Text className="text-xs text-muted-foreground font-medium">
+                        Thought{elapsed != null ? ` for ${formatThoughtDuration(elapsed)}` : ""}
+                    </Text>
                 )}
+                <Animated.View style={chevronStyle}>
+                    <ChevronDownIcon size={12} color={THEME[theme].mutedForeground} />
+                </Animated.View>
             </Pressable>
-            <Animated.View style={animatedStyle} pointerEvents={expanded ? "auto" : "none"}>
-                <View className="ml-2 pl-3 border-l border-border/60 pb-1.5">
+            {expanded && body.length > 0 ? (
+                <View className="ml-2 pl-3 border-l border-border/60 pb-1.5 mt-0.5">
                     <Text className="text-xs text-muted-foreground leading-relaxed">
-                        {text}
+                        {body}
                     </Text>
                 </View>
-            </Animated.View>
+            ) : null}
         </View>
     )
 })

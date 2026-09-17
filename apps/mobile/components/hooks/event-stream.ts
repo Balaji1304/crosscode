@@ -345,6 +345,7 @@ export function useEventStream(url?: string, sessionId?: string, token?: string,
                     }
 
                     const part = props.part as MessagePart | undefined
+                    const delta = props.delta as string | undefined
                     if (!part || !part.messageID || part.sessionID !== currentSessionId) return
 
                     const existing = getOrCreatePending()
@@ -378,6 +379,27 @@ export function useEventStream(url?: string, sessionId?: string, token?: string,
                     const msg = existing[msgIdx]
                     const parts = msg.parts ?? []
                     const partIdx = parts.findIndex(p => p.id === effectivePart.id)
+
+                    // Official opencode event carries incremental `delta` alongside the
+                    // `part` snapshot. The snapshot alone can be stale/empty for
+                    // reasoning parts, so fold the delta into the text.
+                    if (
+                        delta &&
+                        (effectivePart.type === "text" || effectivePart.type === "reasoning") &&
+                        typeof (effectivePart as { text?: unknown }).text === "string"
+                    ) {
+                        const incomingText = (effectivePart as unknown as { text: string }).text ?? ""
+                        const currentText =
+                            partIdx >= 0 && typeof (parts[partIdx] as { text?: unknown }).text === "string"
+                                ? ((parts[partIdx] as unknown as { text: string }).text ?? "")
+                                : ""
+                        const base = incomingText.length >= currentText.length ? incomingText : currentText
+                        if (!base.endsWith(delta)) {
+                            effectivePart = { ...effectivePart, text: base + delta } as MessagePart
+                        } else if (base === incomingText && currentText.length > 0 && incomingText.length < currentText.length) {
+                            effectivePart = { ...effectivePart, text: currentText } as MessagePart
+                        }
+                    }
 
                     let newParts: Part[]
                     if (partIdx >= 0) {
