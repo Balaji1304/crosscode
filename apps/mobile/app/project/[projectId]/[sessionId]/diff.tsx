@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react"
-import { FlatList, View } from "react-native"
+import { FlatList, ScrollView, View } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useColorScheme } from "nativewind"
@@ -56,26 +56,32 @@ export default function DiffPage() {
 
         return (
             <View style={{ backgroundColor: bg }} className="flex-row">
-                <View style={{ minWidth: 36, paddingHorizontal: 4 }} className="items-end border-r border-accent/30">
+                <View style={{ minWidth: 36, paddingHorizontal: 4, flexShrink: 0 }} className="items-end border-r border-accent/30">
                     <Text className="text-xs font-mono leading-5" style={{ color: colors.lineNumColor }}>
                         {oldNum ?? ""}
                     </Text>
                 </View>
-                <View style={{ minWidth: 36, paddingHorizontal: 4 }} className="items-end border-r border-accent/30">
+                <View style={{ minWidth: 36, paddingHorizontal: 4, flexShrink: 0 }} className="items-end border-r border-accent/30">
                     <Text className="text-xs font-mono leading-5" style={{ color: colors.lineNumColor }}>
                         {newNum ?? ""}
                     </Text>
                 </View>
-                <View style={{ minWidth: 16, paddingHorizontal: 4 }}>
+                <View style={{ minWidth: 16, paddingHorizontal: 4, flexShrink: 0 }}>
                     <Text className="text-xs font-mono leading-5" style={{ color: textColor }}>
                         {prefix}
                     </Text>
                 </View>
-                <View style={{ paddingHorizontal: 4, flexShrink: 0 }}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    nestedScrollEnabled
+                    style={{ flex: 1 }}
+                    contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 4, alignItems: "center" }}
+                >
                     <Text className="text-xs font-mono leading-5" style={{ color: textColor }}>
                         {line.content || " "}
                     </Text>
-                </View>
+                </ScrollView>
             </View>
         )
     }, [colors])
