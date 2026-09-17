@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BETA_APP_VERSION, BETA_FLOWS, BUG_AREAS } from "@/lib/beta"
+import { TurnstileWidget } from "@/components/turnstile-widget"
 import { useFormDraft } from "./use-draft"
 
 const BUGS_DRAFT_KEY = "beta-feedback-bugs-draft"
@@ -36,6 +37,7 @@ export function FeedbackForm() {
   const { ref, save, clear, hasDraft } = useFormDraft("beta-feedback-draft")
   const [bugs, setBugs] = useState<BugEntry[]>([])
   const [bugsLoaded, setBugsLoaded] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState("")
 
   useEffect(() => {
     try {
@@ -105,6 +107,7 @@ export function FeedbackForm() {
         projectLink: data.get("projectLink"),
         testimonial: data.get("testimonial"),
         testimonialOptIn: true,
+        turnstileToken,
       }),
     })
     const json = await res.json().catch(() => ({}))
@@ -238,6 +241,7 @@ export function FeedbackForm() {
           </div>
         </div>
       </div>
+      <TurnstileWidget onToken={setTurnstileToken} />
       <Button type="submit" disabled={loading} className="w-full">
         {loading ? "Submitting..." : "Submit final review"}
       </Button>

@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 import crypto from "crypto"
 import { logger } from "@/lib/logger"
+import { checkRateLimit, getClientIp, rateLimitedResponse } from "@/lib/rate-limit"
+import { turnstileTokenFromBody, verifyTurnstileToken } from "@/lib/turnstile"
 
 const FLOWS = [
   "onboarding",
@@ -43,7 +45,13 @@ function normalizeBugs(v: unknown) {
 
 export async function POST(request: Request) {
   try {
+    const rl = await checkRateLimit(request, "sensitiveWrite")
+    if (!rl.success) return rateLimitedResponse(rl)
+
     const body = await request.json()
+    if (!(await verifyTurnstileToken(turnstileTokenFromBody(body), getClientIp(request)))) {
+      return NextResponse.json({ error: "Bot verification failed" }, { status: 403 })
+    }
     const email = body?.email?.trim().toLowerCase()
     const appVersion = body?.appVersion?.trim().slice(0, 50)
     const deviceModel = body?.deviceModel?.trim().slice(0, 100)

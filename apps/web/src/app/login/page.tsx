@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { authClient } from "@/lib/auth-client"
+import { TurnstileWidget } from "@/components/turnstile-widget"
 import { GlyphMatrix } from "@/components/ui/glyph-matrix"
 import { BrandLogo } from "@/components/brand-logo"
 import { LoaderCircle } from "lucide-react"
@@ -18,6 +19,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [checkingSession, setCheckingSession] = useState(true)
+  const [turnstileToken, setTurnstileToken] = useState("")
+  const [cooldown, setCooldown] = useState(0)
+
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [cooldown])
 
   useEffect(() => {
     const checkSession = async () => {
@@ -33,6 +42,7 @@ export default function LoginPage() {
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (cooldown > 0) return
     setLoading(true)
     setError("")
 
@@ -40,12 +50,15 @@ export default function LoginPage() {
       const { error } = await authClient.emailOtp.sendVerificationOtp({
         email,
         type: "sign-in",
+      }, {
+        headers: turnstileToken ? { "x-turnstile-token": turnstileToken } : {},
       })
 
       if (error) {
         setError(error.message || "Failed to send OTP")
       } else {
         setStep("otp")
+        setCooldown(60)
       }
     } catch {
       setError("Failed to send OTP")
@@ -116,8 +129,9 @@ export default function LoginPage() {
                     />
                   </div>
                   {error && <p className="text-sm text-red-500">{error}</p>}
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Sending..." : "Send OTP"}
+                  <TurnstileWidget onToken={setTurnstileToken} />
+                  <Button type="submit" className="w-full" disabled={loading || cooldown > 0}>
+                    {loading ? "Sending..." : cooldown > 0 ? `Resend in ${cooldown}s` : "Send OTP"}
                   </Button>
                 </form>
               ) : (
