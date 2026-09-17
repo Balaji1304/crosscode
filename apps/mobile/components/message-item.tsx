@@ -520,12 +520,14 @@ function MessageItemInner({ message, theme, projectId, sessionId, pendingQuestio
             {message.parts?.map((part, j) => {
                 if (part.type === "reasoning") {
                     const isPartStreaming = !!streaming && j === message.parts!.length - 1
+                    const partTime = (part as { time?: { start: number; end?: number } }).time
                     return (
                         <ReasoningBlock
                             key={part.id ?? j}
-                            text={part.text}
+                            text={(part as { text?: string }).text ?? ""}
                             streaming={isPartStreaming}
-                            startedAt={message.time.created}
+                            startedAt={partTime?.start ?? message.time.created}
+                            endedAt={partTime?.end}
                             theme={theme}
                         />
                     )
