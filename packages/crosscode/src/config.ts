@@ -23,6 +23,7 @@ export type Config = {
     tunnelWsUrl?: string
     sessionToken?: string
     projectId?: string
+    telemetry?: boolean
     cloudflaredTunnel?: CloudflaredTunnel
     projects?: Record<string, ProjectConfig>
     auth?: {
