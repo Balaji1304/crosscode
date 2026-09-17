@@ -239,7 +239,7 @@ export default function ModelsPage() {
                 className="flex-row items-center gap-2 border-b border-accent px-4"
                 style={{ paddingTop: insets.top + 10, paddingBottom: 10 }}
             >
-                <Button variant="ghost" className="w-10 h-10" onPress={() => router.back()}>
+                <Button variant="ghost" className="w-10 h-10 rounded-full" onPress={() => router.back()}>
                     <ArrowLeftIcon size={20} color={THEME[theme].foreground} />
                 </Button>
                 <Text className="text-base font-semibold flex-1">Select Model</Text>
@@ -254,14 +254,14 @@ export default function ModelsPage() {
                 ) : null}
             </View>
 
-            <View className="flex-row items-center gap-2 px-4 py-2">
+            <View className="flex-row items-center gap-2.5 px-4 py-2.5">
                 <View className="flex-1 relative">
-                    <View className="absolute left-3 top-0 bottom-0 justify-center z-10">
+                    <View className="absolute left-4 top-0 bottom-0 justify-center z-10">
                         <Icon as={SearchIcon} size={16} className="text-muted-foreground" />
                     </View>
                     <Input
                         placeholder="Search models..."
-                        className="pl-9 h-9 text-sm"
+                        className="pl-10 pr-4 h-11 text-sm rounded-full"
                         value={search}
                         onChangeText={setSearch}
                         autoCapitalize="none"

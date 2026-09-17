@@ -293,11 +293,11 @@ export default function BrowserPage() {
                 className="flex-row items-center gap-2 border-b border-accent px-4"
                 style={{ paddingTop: insets.top + 10, paddingBottom: 10 }}
             >
-                <Button variant="ghost" className="w-10 h-10" onPress={() => router.back()}>
+                <Button variant="ghost" className="w-10 h-10 rounded-full" onPress={() => router.back()}>
                     <ArrowLeftIcon size={20} color={t.foreground} />
                 </Button>
                 {searchMode ? (
-                    <View className="flex-1 flex-row items-center gap-2 rounded-md border border-border/60 bg-background px-3 h-10">
+                    <View className="flex-1 flex-row items-center gap-2 rounded-full border border-border/60 bg-background pl-4 pr-3 h-11">
                         <RNTextInput
                             className="flex-1 text-base text-foreground"
                             placeholder="Find files..."
@@ -315,7 +315,7 @@ export default function BrowserPage() {
                 ) : (
                     <>
                         <Text className="text-base font-semibold flex-1">Files</Text>
-                        <Button variant="ghost" className="w-10 h-10" onPress={() => setSearchMode(true)}>
+                        <Button variant="ghost" className="w-10 h-10 rounded-full" onPress={() => setSearchMode(true)}>
                             <SearchIcon size={20} color={t.mutedForeground} />
                         </Button>
                     </>
